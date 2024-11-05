@@ -17,7 +17,7 @@ mp_drawing = mp.solutions.drawing_utils
 pygame.mixer.init()
 
 # Load audio files
-audio_folder = "audio_3"
+audio_folder = "audio"
 audio_files = [f"{audio_folder}/{file}" for file in os.listdir(audio_folder) if file.endswith(".wav")]
 random.shuffle(audio_files)
 if len(audio_files) < 100:
