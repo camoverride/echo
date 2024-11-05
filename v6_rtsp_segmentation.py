@@ -7,15 +7,14 @@ import os
 import time
 
 
-# Use a dummy video driver to prevent Pygame from initializing the display
+# Use a dummy video driver for Pygame to bypass display initialization
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-# Set DISPLAY to a non-existent value to prevent any display requirement for OpenCV and Qt
-os.environ["DISPLAY"] = "localhost:10.0"
+# Set Qt platform to "offscreen" to prevent it from trying to use `xcb`
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
-# Suppress unnecessary GUI in TensorFlow Lite initialization
+# Reduce TensorFlow logging to avoid display messages
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
 
 # Initialize MediaPipe Selfie Segmentation and Hands
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
