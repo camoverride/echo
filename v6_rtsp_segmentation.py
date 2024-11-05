@@ -7,17 +7,15 @@ import os
 import time
 
 
-# Ensure Qt tries to use `xcb` even in a headless environment
-os.environ["QT_QPA_PLATFORM"] = "xcb"
-
-# Specify the DISPLAY environment variable
-os.environ.setdefault("DISPLAY", ":0")
-
-# Disable Pygame display (useful if only playing audio)
+# Use a dummy video driver to prevent Pygame from initializing the display
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-# Optional: Suppress TensorFlow and other libraries from using GUI
+# Set DISPLAY to a non-existent value to prevent any display requirement for OpenCV and Qt
+os.environ["DISPLAY"] = "localhost:10.0"
+
+# Suppress unnecessary GUI in TensorFlow Lite initialization
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
 
 # Initialize MediaPipe Selfie Segmentation and Hands
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
