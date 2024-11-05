@@ -7,17 +7,17 @@ import os
 import time
 
 
-import os
+# Ensure Qt tries to use `xcb` even in a headless environment
+os.environ["QT_QPA_PLATFORM"] = "xcb"
 
-# Set the DISPLAY variable to the default display if not already set
+# Specify the DISPLAY environment variable
 os.environ.setdefault("DISPLAY", ":0")
 
-# Disable Qt platform GUI to prevent Qt from trying to open a GUI window over SSH
-os.environ["QT_QPA_PLATFORM"] = "offscreen"
-
-# Optional: Bypass SDL's display requirements for Pygame (if only using audio)
+# Disable Pygame display (useful if only playing audio)
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
+# Optional: Suppress TensorFlow and other libraries from using GUI
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 # Initialize MediaPipe Selfie Segmentation and Hands
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
