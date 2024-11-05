@@ -6,6 +6,13 @@ import random
 import os
 import time
 
+
+import os
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+
+
+
 # Initialize MediaPipe Selfie Segmentation and Hands
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
 mp_hands = mp.solutions.hands
