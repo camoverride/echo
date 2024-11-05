@@ -1,30 +1,15 @@
+import os
 import cv2
 import numpy as np
 import mediapipe as mp
 import pygame
 import random
-import os
 import time
 
-
-# Set environment variables to disable all GUI backends for OpenCV
-os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"  # Disable Microsoft's Media Foundation on Windows (if applicable)
-os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"  # Disable GStreamer (Linux video I/O)
-os.environ["OPENCV_VIDEOIO_PRIORITY_FFMPEG"] = "0"  # Disable FFMPEG video I/O
-
-# Disable Qt entirely
-os.environ["QT_QPA_PLATFORM"] = "offscreen"
-
-# Set Pygame to use dummy driver if only audio is needed
-os.environ["SDL_VIDEODRIVER"] = "dummy"
-
-# Suppress TensorFlow warnings about display initialization
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
-# Initialize OpenCV without GUI functions
-cv2.setUseOpenVX(False)  # Disable OpenVX to avoid unintentional GUI initialization
-cv2.setNumThreads(1)  # Set single-threaded mode for consistency in headless environments
-
+# Environment variables to prevent display requirements
+os.environ["SDL_VIDEODRIVER"] = "dummy"  # Pygame display bypass
+os.environ["QT_QPA_PLATFORM"] = "offscreen"  # Qt bypass
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Suppress TensorFlow log level
 
 # Initialize MediaPipe Selfie Segmentation and Hands
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
@@ -48,8 +33,7 @@ sounds = {(i, j): pygame.mixer.Sound(audio_files.pop()) for i in range(10) for j
 
 # Set the RTSP URL
 rtsp_url = "rtsp://admin:admin123@192.168.0.217:554/cam/realmonitor?channel=1&subtype=0"
-cap = cv2.VideoCapture(rtsp_url)
-cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Reduce buffer size to minimize lag
+cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)  # Use FFMPEG backend to avoid display requirements
 
 # Check if the stream is opened successfully
 if not cap.isOpened():
