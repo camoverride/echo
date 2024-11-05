@@ -7,14 +7,24 @@ import os
 import time
 
 
-# Use a dummy video driver for Pygame to bypass display initialization
-os.environ["SDL_VIDEODRIVER"] = "dummy"
+# Set environment variables to disable all GUI backends for OpenCV
+os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"  # Disable Microsoft's Media Foundation on Windows (if applicable)
+os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"  # Disable GStreamer (Linux video I/O)
+os.environ["OPENCV_VIDEOIO_PRIORITY_FFMPEG"] = "0"  # Disable FFMPEG video I/O
 
-# Set Qt platform to "offscreen" to prevent it from trying to use `xcb`
+# Disable Qt entirely
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
-# Reduce TensorFlow logging to avoid display messages
+# Set Pygame to use dummy driver if only audio is needed
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+# Suppress TensorFlow warnings about display initialization
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
+# Initialize OpenCV without GUI functions
+cv2.setUseOpenVX(False)  # Disable OpenVX to avoid unintentional GUI initialization
+cv2.setNumThreads(1)  # Set single-threaded mode for consistency in headless environments
+
 
 # Initialize MediaPipe Selfie Segmentation and Hands
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
