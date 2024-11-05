@@ -8,9 +8,15 @@ import time
 
 
 import os
+
+# Set the DISPLAY variable to the default display if not already set
+os.environ.setdefault("DISPLAY", ":0")
+
+# Disable Qt platform GUI to prevent Qt from trying to open a GUI window over SSH
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
+# Optional: Bypass SDL's display requirements for Pygame (if only using audio)
 os.environ["SDL_VIDEODRIVER"] = "dummy"
-
-
 
 
 # Initialize MediaPipe Selfie Segmentation and Hands
