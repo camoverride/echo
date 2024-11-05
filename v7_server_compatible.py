@@ -3,6 +3,7 @@ import numpy as np
 import mediapipe as mp
 import pygame
 import random
+import os
 import time
 
 # Initialize MediaPipe components and other display-dependent parts as needed
