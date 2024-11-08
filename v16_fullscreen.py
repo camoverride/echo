@@ -62,6 +62,12 @@ if not cap.isOpened():
 cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
+# Function to detect which cell the index finger tip is over
+def get_square(x, y):
+    cell_height = display_height // 20
+    cell_width = display_width // 20
+    return y // cell_height, x // cell_width
+
 # Main loop
 current_square = None
 while cap.isOpened():
@@ -77,20 +83,26 @@ while cap.isOpened():
     # Mirror the frame horizontally for a mirror effect
     frame = cv2.flip(frame, 1)
 
-    # Resize frame to smaller dimensions for faster processing
-    frame_small = cv2.resize(frame, (640, 360))  # Keep this smaller for processing
-    frame_rgb = cv2.cvtColor(frame_small, cv2.COLOR_BGR2RGB)
+    # Resize frame to the monitor dimensions
+    frame_resized = cv2.resize(frame, (display_width, display_height))
+    frame_rgb = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2RGB)
 
     # Apply Selfie Segmentation
     selfie_results = selfie_segmentation.process(frame_rgb)
     mask = (selfie_results.segmentation_mask > 0.5).astype(np.uint8) * 255
-    person_segment = cv2.bitwise_and(frame_small, frame_small, mask=mask)
+    person_segment = cv2.bitwise_and(frame_resized, frame_resized, mask=mask)
 
-    # Create a zeroed array that matches the dimensions of person_segment
-    display_frame = np.zeros_like(person_segment)
+    # Create a grid to overlay on the video
+    grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)
+    colors = [[(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(20)] for _ in range(20)]
+    for i in range(20):
+        for j in range(20):
+            color = colors[i][j]
+            cv2.rectangle(grid, (j * (display_width // 20), i * (display_height // 20)),
+                          ((j + 1) * (display_width // 20), (i + 1) * (display_height // 20)), color, -1)
 
     # Overlay segmented person onto the grid
-    display_frame = cv2.addWeighted(display_frame, 1, person_segment, 1, 0)
+    display_frame = cv2.addWeighted(grid, 1, person_segment, 1, 0)
 
     # Process the frame with MediaPipe Hands for landmark detection
     hand_results = hands.process(frame_rgb)
@@ -98,8 +110,8 @@ while cap.isOpened():
         for hand_landmarks in hand_results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(display_frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-            tip_x, tip_y = int(index_finger_tip.x * 640), int(index_finger_tip.y * 360)
-            square = (tip_y // (display_height // 20), tip_x // (display_width // 20))  # Adjust grid calculation
+            tip_x, tip_y = int(index_finger_tip.x * display_width), int(index_finger_tip.y * display_height)
+            square = get_square(tip_x, tip_y)
             if square != current_square:
                 current_square = square
                 if 0 <= square[0] < 20 and 0 <= square[1] < 20:
@@ -107,8 +119,7 @@ while cap.isOpened():
             cv2.circle(display_frame, (tip_x, tip_y), 10, (255, 255, 255), -1)
 
     # Display the output frame in fullscreen
-    display_frame_large = cv2.resize(display_frame, (display_width, display_height))
-    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame_large)
+    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame)
 
     # Exit when 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
