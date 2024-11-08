@@ -6,12 +6,9 @@ import random
 import os
 import time
 
-
-
 # Set environment variables for display and Pygame
 os.environ["DISPLAY"] = ":0"  # Use the correct display
 os.environ["SDL_VIDEODRIVER"] = "x11"
-
 
 # Initialize MediaPipe components and other display-dependent parts as needed
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
@@ -112,8 +109,8 @@ while cap.isOpened():
     # Resize display_frame back to original size for viewing
     display_frame_large = cv2.resize(display_frame, (display_width, display_height))
 
-    # Create a window named 'Selfie Segmentation' in fullscreen
-    cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN)
+    # Create a window named 'Selfie Segmentation' and set it to fullscreen
+    cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WINDOW_NORMAL)
     cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     # Display the output frame
