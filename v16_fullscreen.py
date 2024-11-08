@@ -62,20 +62,6 @@ if not cap.isOpened():
 cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-# Grid setup based on the display size
-grid_rows, grid_cols = 20, 20
-cell_height, cell_width = display_height // grid_rows, display_width // grid_cols
-grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)  # Match the display size
-colors = [[(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(grid_cols)] for _ in range(grid_rows)]
-for i in range(grid_rows):
-    for j in range(grid_cols):
-        color = colors[i][j]
-        cv2.rectangle(grid, (j * cell_width, i * cell_height), ((j + 1) * cell_width, (i + 1) * cell_height), color, -1)
-
-# Function to detect which cell the index finger tip is over
-def get_square(x, y):
-    return y // cell_height, x // cell_width
-
 # Main loop
 current_square = None
 while cap.isOpened():
@@ -100,6 +86,15 @@ while cap.isOpened():
     mask = (selfie_results.segmentation_mask > 0.5).astype(np.uint8) * 255
     person_segment = cv2.bitwise_and(frame_small, frame_small, mask=mask)
 
+    # Ensure grid matches the display frame dimensions
+    grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)  # Use the monitor dimensions
+    colors = [[(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(grid.shape[1])] for _ in range(grid.shape[0] // (display_height // 20))]
+    for i in range(grid.shape[0] // (display_height // 20)):
+        for j in range(grid.shape[1] // (display_width // 20)):
+            color = colors[i][j]
+            cv2.rectangle(grid, (j * (display_width // grid.shape[1]), i * (display_height // grid.shape[0])),
+                          ((j + 1) * (display_width // grid.shape[1]), (i + 1) * (display_height // grid.shape[0])), color, -1)
+
     # Overlay segmented person onto the grid
     display_frame = cv2.addWeighted(grid, 1, person_segment, 1, 0)
 
@@ -113,11 +108,11 @@ while cap.isOpened():
             square = get_square(tip_x, tip_y)
             if square != current_square:
                 current_square = square
-                if 0 <= square[0] < grid_rows and 0 <= square[1] < grid_cols:
+                if 0 <= square[0] < 20 and 0 <= square[1] < 20:
                     sounds[square].play()
             cv2.circle(display_frame, (tip_x, tip_y), 10, (255, 255, 255), -1)
 
-    # Display the output frame
+    # Display the output frame in fullscreen
     cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame)
 
     # Exit when 'q' is pressed
