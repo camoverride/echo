@@ -30,6 +30,7 @@ sounds = {(i, j): pygame.mixer.Sound(audio_files.pop()) for i in range(10) for j
 # Set the RTSP URL
 rtsp_url = "rtsp://admin:admin123@192.168.0.217:554/cam/realmonitor?channel=1&subtype=0"
 cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+# cap = cv2.VideoCapture(0)
 
 # Check if the stream is opened successfully
 if not cap.isOpened():
