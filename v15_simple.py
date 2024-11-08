@@ -10,14 +10,14 @@ import time
 os.environ["DISPLAY"] = ":0"  # Use the correct display
 os.environ["SDL_VIDEODRIVER"] = "x11"
 
-# Initialize MediaPipe components and other display-dependent parts as needed
+# Initialize MediaPipe components
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
 mp_hands = mp.solutions.hands
 selfie_segmentation = mp_selfie_segmentation.SelfieSegmentation(model_selection=1)
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.3)
 mp_drawing = mp.solutions.drawing_utils
 
-# Initialize Pygame for audio without setting SDL_VIDEODRIVER
+# Initialize Pygame for audio
 pygame.mixer.init()
 
 # Load audio files
@@ -65,6 +65,10 @@ for i in range(grid_rows):
 def get_square(x, y):
     return y // cell_height, x // cell_width
 
+# Create a window named 'Selfie Segmentation' and set it to fullscreen
+cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN)
+cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
 # Main loop
 current_square = None
 while cap.isOpened():
@@ -106,15 +110,8 @@ while cap.isOpened():
                     sounds[square].play()
             cv2.circle(display_frame, (tip_x, tip_y), 10, (255, 255, 255), -1)
 
-    # Resize display_frame back to original size for viewing
-    display_frame_large = cv2.resize(display_frame, (display_width, display_height))
-
-    # Create a window named 'Selfie Segmentation' and set it to fullscreen
-    cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
     # Display the output frame
-    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame_large)
+    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame)
 
     # Exit when 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
