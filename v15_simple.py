@@ -112,6 +112,10 @@ while cap.isOpened():
     # Resize display_frame back to original size for viewing
     display_frame_large = cv2.resize(display_frame, (display_width, display_height))
 
+    # Create a window named 'Selfie Segmentation' in fullscreen
+    cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     # Display the output frame
     cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame_large)
 
