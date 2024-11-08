@@ -86,17 +86,8 @@ while cap.isOpened():
     mask = (selfie_results.segmentation_mask > 0.5).astype(np.uint8) * 255
     person_segment = cv2.bitwise_and(frame_small, frame_small, mask=mask)
 
-    # Create grid with the same size as the display frame
-    grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)  # Match the display size
-    colors = [[(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(grid.shape[1])] for _ in range(grid.shape[0] // (display_height // 20))]
-    for i in range(grid.shape[0] // (display_height // 20)):
-        for j in range(grid.shape[1] // (display_width // 20)):
-            color = colors[i][j]
-            cv2.rectangle(grid, (j * (display_width // grid.shape[1]), i * (display_height // grid.shape[0])),
-                          ((j + 1) * (display_width // grid.shape[1]), (i + 1) * (display_height // grid.shape[0])), color, -1)
-
     # Overlay segmented person onto the grid
-    display_frame = cv2.addWeighted(grid, 1, person_segment, 1, 0)
+    display_frame = cv2.addWeighted(np.zeros((display_height, display_width, 3), dtype=np.uint8), 1, person_segment, 1, 0)
 
     # Process the frame with MediaPipe Hands for landmark detection
     hand_results = hands.process(frame_rgb)
@@ -105,15 +96,18 @@ while cap.isOpened():
             mp_drawing.draw_landmarks(display_frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
             tip_x, tip_y = int(index_finger_tip.x * 640), int(index_finger_tip.y * 360)
-            square = get_square(tip_x, tip_y)
+            square = (tip_y // (display_height // 20), tip_x // (display_width // 20))  # Adjust grid calculation
             if square != current_square:
                 current_square = square
                 if 0 <= square[0] < 20 and 0 <= square[1] < 20:
                     sounds[square].play()
             cv2.circle(display_frame, (tip_x, tip_y), 10, (255, 255, 255), -1)
 
-    # Display the output frame in fullscreen
-    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame)
+    # Resize display_frame back to original size for viewing
+    display_frame_large = cv2.resize(display_frame, (display_width, display_height))
+
+    # Display the output frame
+    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame_large)
 
     # Exit when 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
