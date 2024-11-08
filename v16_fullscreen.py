@@ -4,11 +4,30 @@ import mediapipe as mp
 import pygame
 import random
 import os
-import time
+import subprocess
 
 # Set environment variables for display and Pygame
 os.environ["DISPLAY"] = ":0"  # Use the correct display
 os.environ["SDL_VIDEODRIVER"] = "x11"
+
+# Function to get monitor dimensions using xrandr
+def get_monitor_dimensions():
+    try:
+        output = subprocess.check_output(['xrandr']).decode('utf-8')
+        for line in output.splitlines():
+            if '*' in line:  # Find the line with the current resolution
+                resolution = line.split()[0]
+                width, height = map(int, resolution.split('x'))
+                return width, height
+    except Exception as e:
+        print(f"Error getting monitor dimensions: {e}")
+    return None, None
+
+# Get the monitor dimensions
+display_width, display_height = get_monitor_dimensions()
+if display_width is None or display_height is None:
+    print("Could not retrieve monitor dimensions.")
+    exit()
 
 # Initialize MediaPipe components
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
@@ -39,26 +58,14 @@ if not cap.isOpened():
     print("Error: Could not open RTSP stream.")
     exit()
 
-# Set processing frame size (downscaled for speed)
-processing_width = 640
-processing_height = 360
-
-# Retrieve original frame size for display
-ret, frame = cap.read()
-if not ret:
-    print("Error: Unable to read from stream.")
-    cap.release()
-    exit()
-display_height, display_width, _ = frame.shape
-
 # Create a window named 'Selfie Segmentation' and set it to fullscreen
 cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 # Grid setup based on the processing frame size
 grid_rows, grid_cols = 20, 20
-cell_height, cell_width = processing_height // grid_rows, processing_width // grid_cols
-grid = np.zeros((processing_height, processing_width, 3), dtype=np.uint8)
+cell_height, cell_width = display_height // grid_rows, display_width // grid_cols
+grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)
 colors = [[(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(grid_cols)] for _ in range(grid_rows)]
 for i in range(grid_rows):
     for j in range(grid_cols):
@@ -85,7 +92,7 @@ while cap.isOpened():
     frame = cv2.flip(frame, 1)
 
     # Resize frame to smaller dimensions for faster processing
-    frame_small = cv2.resize(frame, (processing_width, processing_height))
+    frame_small = cv2.resize(frame, (640, 360))  # Keep this smaller for processing
     frame_rgb = cv2.cvtColor(frame_small, cv2.COLOR_BGR2RGB)
 
     # Apply Selfie Segmentation
@@ -102,7 +109,7 @@ while cap.isOpened():
         for hand_landmarks in hand_results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(display_frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-            tip_x, tip_y = int(index_finger_tip.x * processing_width), int(index_finger_tip.y * processing_height)
+            tip_x, tip_y = int(index_finger_tip.x * 640), int(index_finger_tip.y * 360)
             square = get_square(tip_x, tip_y)
             if square != current_square:
                 current_square = square
@@ -110,11 +117,8 @@ while cap.isOpened():
                     sounds[square].play()
             cv2.circle(display_frame, (tip_x, tip_y), 10, (255, 255, 255), -1)
 
-    # Resize display_frame to match the display resolution for fullscreen
-    display_frame_large = cv2.resize(display_frame, (display_width, display_height))
-
-    # Display the output frame
-    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame_large)
+    # Display the output frame in fullscreen
+    cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame)
 
     # Exit when 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
