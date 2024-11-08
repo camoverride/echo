@@ -86,8 +86,11 @@ while cap.isOpened():
     mask = (selfie_results.segmentation_mask > 0.5).astype(np.uint8) * 255
     person_segment = cv2.bitwise_and(frame_small, frame_small, mask=mask)
 
+    # Create a zeroed array that matches the dimensions of person_segment
+    display_frame = np.zeros_like(person_segment)
+
     # Overlay segmented person onto the grid
-    display_frame = cv2.addWeighted(np.zeros((display_height, display_width, 3), dtype=np.uint8), 1, person_segment, 1, 0)
+    display_frame = cv2.addWeighted(display_frame, 1, person_segment, 1, 0)
 
     # Process the frame with MediaPipe Hands for landmark detection
     hand_results = hands.process(frame_rgb)
@@ -103,10 +106,8 @@ while cap.isOpened():
                     sounds[square].play()
             cv2.circle(display_frame, (tip_x, tip_y), 10, (255, 255, 255), -1)
 
-    # Resize display_frame back to original size for viewing
+    # Display the output frame in fullscreen
     display_frame_large = cv2.resize(display_frame, (display_width, display_height))
-
-    # Display the output frame
     cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame_large)
 
     # Exit when 'q' is pressed
