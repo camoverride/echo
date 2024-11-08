@@ -62,10 +62,10 @@ if not cap.isOpened():
 cv2.namedWindow('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty('Selfie Segmentation with Hand Landmarks on Colored Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-# Grid setup based on the processing frame size
+# Grid setup based on the display size
 grid_rows, grid_cols = 20, 20
 cell_height, cell_width = display_height // grid_rows, display_width // grid_cols
-grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)
+grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)  # Match the display size
 colors = [[(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(grid_cols)] for _ in range(grid_rows)]
 for i in range(grid_rows):
     for j in range(grid_cols):
@@ -117,7 +117,7 @@ while cap.isOpened():
                     sounds[square].play()
             cv2.circle(display_frame, (tip_x, tip_y), 10, (255, 255, 255), -1)
 
-    # Display the output frame in fullscreen
+    # Display the output frame
     cv2.imshow('Selfie Segmentation with Hand Landmarks on Colored Grid', display_frame)
 
     # Exit when 'q' is pressed
