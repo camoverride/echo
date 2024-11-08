@@ -86,8 +86,8 @@ while cap.isOpened():
     mask = (selfie_results.segmentation_mask > 0.5).astype(np.uint8) * 255
     person_segment = cv2.bitwise_and(frame_small, frame_small, mask=mask)
 
-    # Ensure grid matches the display frame dimensions
-    grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)  # Use the monitor dimensions
+    # Create grid with the same size as the display frame
+    grid = np.zeros((display_height, display_width, 3), dtype=np.uint8)  # Match the display size
     colors = [[(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(grid.shape[1])] for _ in range(grid.shape[0] // (display_height // 20))]
     for i in range(grid.shape[0] // (display_height // 20)):
         for j in range(grid.shape[1] // (display_width // 20)):
