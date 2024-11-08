@@ -6,6 +6,13 @@ import random
 import os
 import time
 
+
+
+# Set environment variables for display and Pygame
+os.environ["DISPLAY"] = ":0"  # Use the correct display
+os.environ["SDL_VIDEODRIVER"] = "x11"
+
+
 # Initialize MediaPipe components and other display-dependent parts as needed
 mp_selfie_segmentation = mp.solutions.selfie_segmentation
 mp_hands = mp.solutions.hands
